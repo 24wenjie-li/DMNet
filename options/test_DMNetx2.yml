@@ -1,0 +1,106 @@
+# general settings
+name: DMNetx2_val
+# BASE Setting: 90C-6G-4B-2FFNExpansion
+model_type: SRModel
+scale: 2
+num_gpu: 1
+manual_seed: 0
+
+# dataset and data loader settings
+datasets:
+  val_1:
+    name: Set5
+    type: PairedImageDataset
+    dataroot_gt: /data/wenjieli/SISR_datasets/benchmark/Set5/HR/
+    dataroot_lq: /data/wenjieli/SISR_datasets/benchmark/Set5/LR_bicubic/X2/
+    filename_tmpl: '{}x2'
+    io_backend:
+      type: disk
+
+  val_2:
+    name: Set14
+    type: PairedImageDataset
+    dataroot_gt: /data/wenjieli/SISR_datasets/benchmark/Set14/HR/
+    dataroot_lq: /data/wenjieli/SISR_datasets/benchmark/Set14/LR_bicubic/X2/
+    filename_tmpl: '{}x2'
+    io_backend:
+      type: disk
+
+  val_3:
+    name: B100
+    type: PairedImageDataset
+    dataroot_gt: /data/wenjieli/SISR_datasets/benchmark/B100/HR/
+    dataroot_lq: /data/wenjieli/SISR_datasets/benchmark/B100/LR_bicubic/X2/
+    filename_tmpl: '{}x2'
+    io_backend:
+      type: disk
+
+  val_4:
+    name: Urban100
+    type: PairedImageDataset
+    dataroot_gt: /data/wenjieli/SISR_datasets/benchmark/Urban100/HR/
+    dataroot_lq: /data/wenjieli/SISR_datasets/benchmark/Urban100/LR_bicubic/X2/
+    filename_tmpl: '{}x2'
+    io_backend:
+      type: disk
+
+  val_5:
+    name: Manga109
+    type: PairedImageDataset
+    dataroot_gt: /data/wenjieli/SISR_datasets/benchmark/Manga109/HR/
+    dataroot_lq: /data/wenjieli/SISR_datasets/benchmark/Manga109/LR_bicubic/X2/
+    filename_tmpl: '{}x2'
+    io_backend:
+      type: disk
+
+
+# network structures
+# Large Setting: 90C-6G-4B-2FFNExpansion
+network_g:
+  type: DMNet
+  upscale: 2
+  in_chans: 3
+  dim: 48
+  groups: 3
+  blocks: 3
+  buildblock_type: 'Wave'
+  window_size: 7
+  idynamic_num_heads: 6
+  idynamic_ffn_type: 'GDFN'
+  idynamic_ffn_expansion_factor: 2.
+  idynamic: true
+  restormer_num_heads: 8
+  restormer_ffn_type: 'GDFN'
+  restormer_ffn_expansion_factor: 2.
+  tlc_flag: true
+  tlc_kernel: 64    # using tlc during validation
+  activation: 'relu'
+  body_norm: false
+  img_range: 1.
+  upsampler: 'pixelshuffledirect'
+
+# path
+path:
+  pretrain_network_g: ./experiments/DMNetx2/models/net_g_latest.pth
+  strict_load_g: true
+  resume_state: ~
+
+# validation settings
+val:
+  save_img: true
+  suffix: ~  # add suffix to saved images, if None, use exp name
+
+  metrics:
+    psnr: # metric name, can be arbitrary
+      type: calculate_psnr
+      crop_border: 4
+      test_y_channel: true
+    ssim:
+      type: calculate_ssim
+      crop_border: 4
+      test_y_channel: true
+
+# dist training settings
+dist_params:
+  backend: nccl
+  port: 22144
